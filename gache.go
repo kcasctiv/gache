@@ -6,23 +6,42 @@ import (
 	"time"
 )
 
+// Cache presents interface of cache objects
 type Cache interface {
 	Group
+	// Group returns group with specified key
 	Group(key string) (Group, bool)
+	// NewGroup creates new group with specified key,
+	// item live duration and filling function
 	NewGroup(key string, expiration time.Duration, fillFunc FillFunc) error
+	// DelGroup deletes group with specified key
 	DelGroup(key string)
+	// GetGroupVal returns value with specified vkey
+	// from cache group with specified gkey
 	GetGroupVal(gkey, vkey string) (interface{}, bool)
+	// SetGroupVal sets value with vkey as item of cache group
+	// with specified gkey
 	SetGroupVal(gkey, vkey string, val interface{}) error
 }
 
+// Group presents interface of cache group
 type Group interface {
+	// Get returns value with specified key
 	Get(key string) (interface{}, bool)
+	// Set sets value for specified key
 	Set(key string, val interface{})
+	// Del removes from group value with specified key
 	Del(key string)
+	// SetExpiration sets live duration for group values
 	SetExpiration(expiration time.Duration)
+	// SetFillFunc sets function,
+	// which will be used for filling key value,
+	// if it was expired or not found in group
 	SetFillFunc(fillFunc FillFunc)
 }
 
+// FillFunc presents type of function, intended for
+// filling group value by key
 type FillFunc func(key string) (interface{}, bool)
 
 type cache struct {
@@ -30,6 +49,8 @@ type cache struct {
 	groups map[string]*group
 }
 
+// NewCache returns new cache object with specified
+// key live duration and filling function
 func NewCache(expiration time.Duration, fillFunc FillFunc) Cache {
 	if expiration < 0 {
 		expiration = 0
